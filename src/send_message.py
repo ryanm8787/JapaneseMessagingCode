@@ -1,13 +1,14 @@
 import pandas as pd
 import random
 import time 
-import datetime
 import telebot
 import threading
 import requests
 import json
+import schedule
 
-f = open("config.json")
+
+f = open("../config.json")
 json = json.load(f)
 TOKEN = json["bot-token"]
 bot = telebot.TeleBot(TOKEN)
@@ -15,11 +16,6 @@ bot_chat_id = json["bot-chat-id"]
 time_to_wait_s = json["time-to-wait-s"]
 SHEET_ID = json["sheet-id"]
 SHEET_NAME = json["sheet-name"]
-
-
-lines = []
-with open("schedule.txt") as f:
-    lines = f.read().splitlines()
 
 
 def retrieve_data_from_sheet() -> list:
@@ -50,19 +46,16 @@ def send_practice_word() -> None:
         time.sleep(time_to_wait_s)
 
 
-def run_schedule() -> None:
-    while True:
-        now = datetime.datetime.now()
-
-        for current in lines:
-            if now.hour == current and now.minute == 30 and now.second == 0:
-                send_practice_word()
-
-
 @bot.message_handler(commands=['start', 'hello'])
 def send_welcome(message) -> None:
     bot.reply_to(message, "こんにちは！練習しましょうか？＞.＜")
    
+
+def run_schedule() -> None:
+    schedule.every().hour.at(":40").do(send_practice_word)
+    while True:
+        schedule.run_pending()
+
 
 if __name__ == "__main__":
     polling_thread = threading.Thread(target=bot.infinity_polling, daemon=True)
@@ -74,3 +67,4 @@ if __name__ == "__main__":
     except:
         polling_thread.join()
         scheduling_thread.join()
+

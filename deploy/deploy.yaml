@@ -1,0 +1,22 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: message-app-deployment
+  labels:
+    app: message-app
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: message-app
+  template:
+    metadata:
+      labels:
+        app: message-app
+    spec:
+      containers:
+      - name: message-app
+        image: app_deploy
+        imagePullPolicy: Never
+        ports:
+        - containerPort: 80

@@ -8,7 +8,7 @@ import json
 import schedule
 
 
-f = open("../config.json")
+f = open("/tmp/config.json")
 json = json.load(f)
 TOKEN = json["bot-token"]
 bot = telebot.TeleBot(TOKEN)

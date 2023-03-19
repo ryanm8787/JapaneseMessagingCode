@@ -7,7 +7,7 @@ echo ""
 cd ../
 docker build -t app_deploy .
 
-
+cd deploy/
 echo "Create kubernetes deployment.\n" 
 echo ""
 echo ""

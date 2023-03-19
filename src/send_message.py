@@ -16,6 +16,7 @@ bot_chat_id = json["bot-chat-id"]
 time_to_wait_s = json["time-to-wait-s"]
 SHEET_ID = json["sheet-id"]
 SHEET_NAME = json["sheet-name"]
+message_ids = []
 
 
 def retrieve_data_from_sheet() -> list:
@@ -40,9 +41,18 @@ def retrieve_data_from_sheet() -> list:
 
 def send_practice_word() -> None:
     word_list = retrieve_data_from_sheet()
+    
+    if len(message_ids) > 0:
+        for id in message_ids:
+            url = f"https://api.telegram.org/bot{TOKEN}/deleteMessage?chat_id={bot_chat_id}&message_id={id}"
+            ret = requests.get(url).json() # this sends the message
+        
+        message_ids.clear()
+
     for message in word_list:        
         url = f"https://api.telegram.org/bot{TOKEN}/sendMessage?chat_id={bot_chat_id}&text={message}"
-        requests.get(url).json() # this sends the message
+        ret = requests.get(url).json() # this sends the message
+        message_ids.append(ret['result']['message_id'])
         time.sleep(time_to_wait_s)
 
 
@@ -67,4 +77,3 @@ if __name__ == "__main__":
     except:
         polling_thread.join()
         scheduling_thread.join()
-

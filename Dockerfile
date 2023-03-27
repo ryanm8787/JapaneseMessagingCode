@@ -7,9 +7,12 @@ RUN apt update -y && \
     add-apt-repository ppa:deadsnakes/ppa -y && \
     apt-get -y install python3-pip;
 
-ADD install/requirements.txt  ./ 
+RUN apt install python3-numpy -y
+RUN apt install python3-pandas -y
 
-RUN pip3 install -r requirements.txt 
+ADD install/requirements.txt  ./ 
+RUN python3 -m pip install --upgrade pip
+RUN pip3 install -r requirements.txt -vvv
 
 RUN mkdir /home/app
 COPY src/ /home/app

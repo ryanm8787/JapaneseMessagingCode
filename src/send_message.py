@@ -20,21 +20,18 @@ openai.api_key = json["open-api-key"]
 message_ids = []
 
 word_rate = 1
-# response = openai.Completion.create(
-#   model="text-davinci-003",
-#   prompt="Can you give me an example sentence of the following Japanese word {}?".format(""),
-#   temperature=0,
-#   max_tokens=100,
-#   top_p=1,
-#   frequency_penalty=0.0,
-#   presence_penalty=0.0,
-#   stop=["\n"]
-# )
+MAX_TOKEN_CONFIG = 1000
 
-# def get_example_sentence()-> str:
-    
-#     return ""
 
+def get_example_sentence(example_word : str)-> str:
+    prompt_text = "Can you give me an example sentence using the following Japanese word '{}'?".format(example_word)
+    response = openai.Completion.create(
+        model="text-davinci-003",
+        prompt=prompt_text,
+        max_tokens=MAX_TOKEN_CONFIG
+    )
+
+    return response.choices[0].text
 
 def retrieve_data_from_sheet() -> list:
     url = f'https://docs.google.com/spreadsheets/d/{SHEET_ID}/gviz/tq?tqx=out:csv&sheet={SHEET_NAME}'
@@ -66,7 +63,8 @@ def send_practice_word() -> None:
 
     for i in range(word_rate):
         word_list = retrieve_data_from_sheet()
-    
+        rei_bun = get_example_sentence(word_list[0])
+        word_list.append(rei_bun)
         for message in word_list:        
             url = f"https://api.telegram.org/bot{TOKEN}/sendMessage?chat_id={bot_chat_id}&text={message}"
             ret = requests.get(url).json() # this sends the message
@@ -100,6 +98,18 @@ def change_message_rate(message) -> None:
     global word_rate
     word_rate = new_rate
     bot.reply_to(message, "私は客先さんのレートを変えていただけませんか？\n新しいレート：{}".format(word_rate))
+
+
+@bot.message_handler(commands=['reibun'])
+def change_message_rate(message) -> None:
+    temp_msg = message.text
+    example_word = temp_msg.replace("/reibun", "")
+    
+    if example_word == "":
+        return 
+    
+    rei_bun = get_example_sentence(example_word)
+    bot.reply_to(message, rei_bun)
 
 
 @bot.message_handler(commands=['interval'])

@@ -3,7 +3,10 @@
     "bot-token": "",
     "bot-chat-id": "", 
     "time-to-wait-s": 20,
-    "sheet-id": "",
-    "sheet-name": "",
-    "open-api-key": ""
+    "sheet-id": "1McY4ryAWgUACggAcNh0Gpv3hlz4fc9mKJqDMFkt2k70",
+    "sheet-name": "japanese",
+    "open-api-key": "",
+    "db-password": "openSesame",
+    "db-name": "japanese_practice",
+    "db-username": "root"
 }

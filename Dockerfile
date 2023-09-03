@@ -12,7 +12,7 @@ RUN apt install python3-pandas -y
 
 ADD install/requirements.txt  ./ 
 RUN python3 -m pip install --upgrade pip
-RUN pip3 install -r requirements.txt -vvv
+RUN pip3 install -r requirements.txt 
 
 RUN mkdir /home/app
 COPY src/ /home/app

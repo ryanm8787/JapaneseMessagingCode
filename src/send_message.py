@@ -7,26 +7,33 @@ import requests
 import json
 import schedule
 import openai
+import os 
+from arango_handler.arango_handler import Arangohandler
 
-f = open("/tmp/config.json")
-json = json.load(f)
-TOKEN = json["bot-token"]
+# f = open("/tmp/config.json")
+
+# TODO: 
+f = open("../install/config.json") 
+
+json_config = json.load(f)
+TOKEN = json_config["bot-token"]
 bot = telebot.TeleBot(TOKEN)
-bot_chat_id = json["bot-chat-id"]
-time_to_wait_s = json["time-to-wait-s"]
-SHEET_ID = json["sheet-id"]
-SHEET_NAME = json["sheet-name"]
-openai.api_key = json["open-api-key"]
+bot_chat_id = json_config["bot-chat-id"]
+time_to_wait_s = json_config["time-to-wait-s"]
+SHEET_ID = json_config["sheet-id"]
+SHEET_NAME = json_config["sheet-name"]
+openai.api_key = json_config["open-api-key"]
 message_ids = []
+
+arango_handler = Arangohandler(json_config["db-name"], json_config["db-username"], json_config["db-password"])
 
 word_rate = 1
 MAX_TOKEN_CONFIG = 1000
 
-
 def get_example_sentence(example_word : str)-> str:
     prompt_text = "Can you give me an example sentence using the following Japanese word '{}'?".format(example_word)
     response = openai.Completion.create(
-        model="text-davinci-003",
+        model="gpt-4",
         prompt=prompt_text,
         max_tokens=MAX_TOKEN_CONFIG
     )
@@ -52,7 +59,6 @@ def retrieve_data_from_sheet() -> list:
     message_str_meaning = "その言葉の英語の意味です： \n\n{}".format(target_word_meaning)   
     return [message_str_word, message_str_hiraragana, message_str_meaning]
 
-
 def send_practice_word() -> None:
     if len(message_ids) > 0:
         for id in message_ids:
@@ -63,8 +69,8 @@ def send_practice_word() -> None:
 
     for i in range(word_rate):
         word_list = retrieve_data_from_sheet()
-        rei_bun = get_example_sentence(word_list[0])
-        word_list.append(rei_bun)
+        # rei_bun = get_example_sentence(word_list[0])
+        # word_list.append(rei_bun)
         for message in word_list:        
             url = f"https://api.telegram.org/bot{TOKEN}/sendMessage?chat_id={bot_chat_id}&text={message}"
             ret = requests.get(url).json() # this sends the message
@@ -87,6 +93,7 @@ def change_message_rate(message) -> None:
     temp_msg = temp_msg.replace("/rate ", "")
     
     if temp_msg == "":
+        bot.reply_to(message, "申し上げまぜん。rateがありません。できませんでした。")
         return 
     
     new_rate = int(temp_msg)
@@ -106,6 +113,7 @@ def change_message_rate(message) -> None:
     example_word = temp_msg.replace("/reibun", "")
     
     if example_word == "":
+        bot.reply_to(message, "申し上げまぜん。言葉がありません。できませんでした。")
         return 
     
     rei_bun = get_example_sentence(example_word)
